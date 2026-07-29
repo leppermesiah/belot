@@ -167,7 +167,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   color: #ddd;
   margin-bottom: 4px;
 }
-.card-strength-line { font-family: monospace; letter-spacing: 0.5px; }
+.card-strength-line { font-family: monospace; font-size: 12px; letter-spacing: -0.5px; }
 
 .game-field {
   flex: 1;
