@@ -64,11 +64,23 @@ const I18N = {
     confirmLeaveRoom: 'Да напуснеш тази игра и да започнеш нова стая?',
     connectingPrevious: 'Свързване към предишната игра…',
     announcePrefix: (label) => `Обяви: ${label}`,
-    belotDeclareLabel: 'Белот (20)',
     suitNames: { clubs: 'спатия', diamonds: 'каро', hearts: 'купа', spades: 'пика' },
     suitNamesCap: { clubs: 'Спатия', diamonds: 'Каро', hearts: 'Купа', spades: 'Пика' },
     cardStrengthTitle: 'Сила на картите',
     cardStrengthOther: 'Останали',
+    rankDisplay: { A: 'Асо', K: 'Поп', Q: 'Дама', J: 'Вале' },
+    annTierce: (rank, suit) => `Терца до ${rank} ${suit}`,
+    annFifty: (rank, suit) => `Петдесет до ${rank} ${suit}`,
+    annHundred: (rank, suit) => `Сто до ${rank} ${suit}`,
+    annCarreJ: 'Каре валета',
+    annCarreNine: 'Каре девятки',
+    annCarreOther: (rank) => `Каре ${rank}`,
+    annBelot: 'Белот',
+    errorRoomNotFound: 'Стаята не е намерена.',
+    errorRoomFull: 'Стаята вече е пълна.',
+    errorTeamsIncomplete: 'Всеки играч трябва да избере отбор (2 Черешка, 2 Малинка) преди старт.',
+    errorInvalidTeam: 'Невалиден отбор.',
+    errorTeamFull: 'Този отбор вече е пълен.',
   },
   en: {
     title: 'Belot',
@@ -129,11 +141,23 @@ const I18N = {
     confirmLeaveRoom: 'Leave this game and start a new room?',
     connectingPrevious: 'Connecting to your previous game…',
     announcePrefix: (label) => `Announce: ${label}`,
-    belotDeclareLabel: 'Belot (20)',
     suitNames: { clubs: 'clubs', diamonds: 'diamonds', hearts: 'hearts', spades: 'spades' },
     suitNamesCap: { clubs: 'Clubs', diamonds: 'Diamonds', hearts: 'Hearts', spades: 'Spades' },
     cardStrengthTitle: 'Card strength',
     cardStrengthOther: 'Other suits',
+    rankDisplay: { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' },
+    annTierce: (rank, suit) => `Tierce to ${rank} of ${suit}`,
+    annFifty: (rank, suit) => `Fifty to ${rank} of ${suit}`,
+    annHundred: (rank, suit) => `Hundred to ${rank} of ${suit}`,
+    annCarreJ: 'Four jacks',
+    annCarreNine: 'Four nines',
+    annCarreOther: (rank) => `Four ${rank}s`,
+    annBelot: 'Belot',
+    errorRoomNotFound: 'Room not found.',
+    errorRoomFull: 'This room is already full.',
+    errorTeamsIncomplete: 'Every player must choose a team (2 Cherry, 2 Raspberry) before starting.',
+    errorInvalidTeam: 'Invalid team.',
+    errorTeamFull: 'That team is already full.',
   },
 };
 
@@ -343,7 +367,7 @@ function attachClickOrDrag(el, cardStr, m) {
 
 $('belotYesBtn')?.addEventListener('click', () => {
   if (pendingBelotPlay) {
-    sendMsg({ type: 'declare', label: t('belotDeclareLabel'), category: 'belot' });
+    sendMsg({ type: 'declare', kind: 'belot', value: 20, category: 'belot' });
     sendMsg({ type: 'play_card', card: pendingBelotPlay });
   }
   pendingBelotPlay = null;
@@ -374,10 +398,10 @@ function renderAnnouncePrompt(m) {
   anns.forEach(a => {
     const btn = document.createElement('button');
     const alreadyDeclared = declaredCategoriesThisHand.has(a.category);
-    btn.textContent = t('announcePrefix', a.label);
+    btn.textContent = t('announcePrefix', announceLabel(a));
     btn.disabled = alreadyDeclared;
     btn.addEventListener('click', () => {
-      sendMsg({ type: 'declare', label: a.label, category: a.category });
+      sendMsg({ type: 'declare', kind: a.kind, suit: a.suit, highRank: a.highRank, value: a.value, category: a.category });
       declaredCategoriesThisHand.add(a.category);
       renderAnnouncePrompt(m);
     });
@@ -659,13 +683,13 @@ function renderScoreboard() {
 
 function onDeclared(m) {
   if (!declaredLabels[m.player]) declaredLabels[m.player] = [];
-  declaredLabels[m.player].push(m.label);
+  declaredLabels[m.player].push({ kind: m.kind, suit: m.suit, highRank: m.highRank, value: m.value });
   renderDeclaredLabels();
 }
 
 function renderDeclaredLabels() {
   for (let seat = 0; seat < 4; seat++) {
-    const text = (declaredLabels[seat] || []).join(' · ');
+    const text = (declaredLabels[seat] || []).map(announceLabel).join(' · ');
     const el = seat === mySeat ? $('myDeclaredLabel') : seatElementFor(seat)?.querySelector('.declared-label');
     if (el) el.textContent = text;
   }
@@ -727,11 +751,23 @@ function flyTrickToWinner(winnerSeat) {
   });
 }
 
+// Maps the server's language-neutral error codes to a translated message.
+// Unrecognized codes (e.g. raw Go error text from rare defensive paths)
+// fall back to showing the code as-is rather than crashing the UI.
+const ERROR_CODE_KEYS = {
+  room_not_found: 'errorRoomNotFound',
+  room_full: 'errorRoomFull',
+  teams_incomplete_before_start: 'errorTeamsIncomplete',
+  invalid_team: 'errorInvalidTeam',
+  team_full: 'errorTeamFull',
+};
+
 function onError(m) {
   const el = $('lobbyError');
-  if (el) { el.textContent = m.message; }
+  const key = ERROR_CODE_KEYS[m.message];
+  if (el) { el.textContent = key ? t(key) : m.message; }
   console.warn('server error:', m.message);
-  if (m.message === 'room not found') {
+  if (m.message === 'room_not_found') {
     clearSession();
     showScreen('lobby');
   }
@@ -824,6 +860,27 @@ function onGameState(m) {
     return;
   }
   renderGameState(m);
+}
+
+// Builds the display text for a sequence/carre/belot announce from the
+// server's language-neutral fields (kind/suit/highRank/value), so it
+// renders in whichever language the viewer currently has selected -
+// unlike a pre-rendered label, which would be stuck in whoever declared
+// it's language.
+function announceLabel(a) {
+  const rank = (t('rankDisplay')[a.highRank]) || a.highRank;
+  const suitName = a.suit ? (t('suitNames')[a.suit] || '') : '';
+  let text = '';
+  switch (a.kind) {
+    case 'tierce': text = t('annTierce', rank, suitName); break;
+    case 'fifty': text = t('annFifty', rank, suitName); break;
+    case 'hundred': text = t('annHundred', rank, suitName); break;
+    case 'carreJ': text = t('annCarreJ'); break;
+    case 'carreNine': text = t('annCarreNine'); break;
+    case 'carreOther': text = t('annCarreOther', rank); break;
+    case 'belot': text = t('annBelot'); break;
+  }
+  return `${text} (${a.value})`;
 }
 
 function contractShortLabel(type, suit) {

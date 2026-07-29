@@ -38,41 +38,6 @@ func rankToStr(r engine.Rank) string {
 	return r.String()
 }
 
-// rankToBgDisplay renders a rank the way it should appear in a
-// Bulgarian announce label - Асо/Поп/Дама/Вале for the face cards,
-// but 7/8/9/10 stay as plain digits.
-func rankToBgDisplay(r engine.Rank) string {
-	switch r.String() {
-	case "A":
-		return "Асо"
-	case "K":
-		return "Поп"
-	case "Q":
-		return "Дама"
-	case "J":
-		return "Вале"
-	default:
-		return r.String()
-	}
-}
-
-// suitToBgDisplay renders a suit the way it should appear in a
-// Bulgarian announce label (capitalized, unlike suitToStr's lowercase
-// wire-protocol token).
-func suitToBgDisplay(s engine.Suit) string {
-	switch s {
-	case engine.Clubs:
-		return "Спатия"
-	case engine.Diamonds:
-		return "Каро"
-	case engine.Hearts:
-		return "Купа"
-	case engine.Spades:
-		return "Пика"
-	}
-	return ""
-}
-
 func strToRank(s string) (engine.Rank, error) {
 	for _, r := range engine.AllRanks {
 		if r.String() == s {
@@ -116,22 +81,25 @@ func contractTypeToStr(ct engine.ContractType) string {
 	return ""
 }
 
-func describeAnnounce(a engine.Announce) string {
-	switch a.Kind {
+// annKindToStr is a language-neutral wire token for the announce kind -
+// the client looks up its own display text (in whichever language the
+// player picked) from this instead of the server picking the wording.
+func annKindToStr(k engine.AnnounceKind) string {
+	switch k {
 	case engine.AnnTierce:
-		return fmt.Sprintf("Терца до %s %s (20)", rankToBgDisplay(a.HighRank), suitToBgDisplay(a.Suit))
+		return "tierce"
 	case engine.AnnFifty:
-		return fmt.Sprintf("Петдесет до %s %s (50)", rankToBgDisplay(a.HighRank), suitToBgDisplay(a.Suit))
+		return "fifty"
 	case engine.AnnHundred:
-		return fmt.Sprintf("Сто до %s %s (100)", rankToBgDisplay(a.HighRank), suitToBgDisplay(a.Suit))
+		return "hundred"
 	case engine.AnnCarreJ:
-		return "Каре валета (200)"
+		return "carreJ"
 	case engine.AnnCarreNine:
-		return "Каре девятки (150)"
+		return "carreNine"
 	case engine.AnnCarreOther:
-		return fmt.Sprintf("Каре %s (100)", rankToBgDisplay(a.HighRank))
+		return "carreOther"
 	}
-	return fmt.Sprintf("Анонс (%d)", a.Value)
+	return ""
 }
 
 func phaseToStr(p engine.GamePhase) string {

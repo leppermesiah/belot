@@ -39,7 +39,9 @@ type inMsg struct {
 	Suit        string `json:"suit"`
 	Card        string `json:"card"`
 	Team        string `json:"team"`     // cherry | malina
-	Label       string `json:"label"`    // for declare messages
+	Kind        string `json:"kind"`     // announce kind, for declare messages
+	HighRank    string `json:"highRank"` // for declare messages
+	Value       int    `json:"value"`    // for declare messages
 	Category    string `json:"category"` // "sequence" | "carre" | "belot", for declare messages
 	TeamName    string `json:"teamName"`
 }
@@ -125,12 +127,12 @@ func (c *Client) handleLobbyMsg(hub *Hub, m inMsg) {
 	case "join_room":
 		room := hub.Get(m.Code)
 		if room == nil {
-			b, _ := json.Marshal(map[string]interface{}{"type": "error", "message": "room not found"})
+			b, _ := json.Marshal(map[string]interface{}{"type": "error", "message": "room_not_found"})
 			c.send <- b
 			return
 		}
 		if room.NumJoined >= 4 {
-			b, _ := json.Marshal(map[string]interface{}{"type": "error", "message": "room is full"})
+			b, _ := json.Marshal(map[string]interface{}{"type": "error", "message": "room_full"})
 			c.send <- b
 			return
 		}
@@ -166,7 +168,7 @@ func (c *Client) handleGameMsg(m inMsg) {
 		c.handleSetTeamName(m)
 
 	case "declare":
-		if room.Match == nil || room.Match.Current == nil || m.Label == "" {
+		if room.Match == nil || room.Match.Current == nil || m.Kind == "" {
 			return
 		}
 		team := c.seat % 2
@@ -179,9 +181,12 @@ func (c *Client) handleGameMsg(m inMsg) {
 			room.DeclaredBelot[team] = true
 		}
 		room.broadcastRaw(map[string]interface{}{
-			"type":   "declared",
-			"player": c.seat,
-			"label":  m.Label,
+			"type":     "declared",
+			"player":   c.seat,
+			"kind":     m.Kind,
+			"suit":     m.Suit,
+			"highRank": m.HighRank,
+			"value":    m.Value,
 		})
 
 	case "start_game":
@@ -198,7 +203,7 @@ func (c *Client) handleGameMsg(m inMsg) {
 			}
 		}
 		if cherry != 2 || malina != 2 {
-			room.broadcastError(c.seat, "всеки играч трябва да избере отбор (2 Черешка, 2 Малинка) преди старт")
+			room.broadcastError(c.seat, "teams_incomplete_before_start")
 			return
 		}
 
@@ -263,7 +268,7 @@ func (c *Client) handleChooseTeam(m inMsg) {
 		return
 	}
 	if m.Team != "cherry" && m.Team != "malina" {
-		room.broadcastError(c.seat, "невалиден отбор")
+		room.broadcastError(c.seat, "invalid_team")
 		return
 	}
 	if room.TeamChoice[c.seat] == m.Team {
@@ -276,7 +281,7 @@ func (c *Client) handleChooseTeam(m inMsg) {
 		}
 	}
 	if count >= 2 {
-		room.broadcastError(c.seat, "този отбор вече е пълен")
+		room.broadcastError(c.seat, "team_full")
 		return
 	}
 	room.TeamChoice[c.seat] = m.Team

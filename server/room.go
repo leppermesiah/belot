@@ -260,7 +260,9 @@ func (r *Room) broadcastGameState() {
 					category = "carre"
 				}
 				myAnnounces = append(myAnnounces, map[string]interface{}{
-					"label":    describeAnnounce(a),
+					"kind":     annKindToStr(a.Kind),
+					"suit":     suitToStr(a.Suit),
+					"highRank": rankToStr(a.HighRank),
 					"value":    a.Value,
 					"category": category,
 				})
