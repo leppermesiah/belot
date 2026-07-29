@@ -11,7 +11,7 @@
   <Support>https://github.com/leppermesiah/belot/issues</Support>
   <Project>https://github.com/leppermesiah/belot</Project>
   <Overview>Самостоятелен, self-hosted белот за 4 играчи - играе се направо в браузъра. Пълни официални правила, двуезичен интерфейс (BG/EN), drag-and-drop карти, именуване на отборите, recap на всяка ръка.</Overview>
-  <Category>Games:</Category>
+  <Category>GameServers:</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/leppermesiah/belot/main/templates/belot.xml</TemplateURL>
   <Config Name="WebUI Port" Target="8080" Default="8082" Mode="tcp" Description="Портът, на който ще е достъпна играта" Type="Port" Display="always" Required="true" Mask="false">8082</Config>
