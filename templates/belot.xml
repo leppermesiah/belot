@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>Belot</Name>
+  <Icon>https://github.com/leppermesiah/belot/blob/main/icon.png</Icon>
   <Repository>leppermesiah/belot:latest</Repository>
   <Registry>https://hub.docker.com/r/leppermesiah/belot</Registry>
   <Network>bridge</Network>
