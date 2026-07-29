@@ -220,15 +220,15 @@ const SUIT_LETTER = { clubs: 'C', diamonds: 'D', hearts: 'H', spades: 'S' };
 const HAND_SUIT_ORDER = ['spades', 'hearts', 'diamonds', 'clubs'];
 // Rank order within a suit depends on whether that suit counts as trump
 // under the current contract (всичко коз = every suit; без коз = none;
-// suit contract = only the called suit).
-const NORMAL_RANK_ORDER = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+// suit contract = only the called suit). Matches engine/card.go's
+// nonTrumpRankOrder/trumpRankOrder (low->high) - this is real trick-taking
+// strength, not an arbitrary display order.
+const NORMAL_RANK_ORDER = ['7', '8', '9', 'J', 'Q', 'K', '10', 'A'];
 const TRUMP_RANK_ORDER = ['7', '8', 'Q', 'K', '10', 'A', '9', 'J'];
 
-// True trick-taking strength, strongest to weakest (matches engine/card.go),
-// used for the "card strength" hint - NOT the same as the hand-sort orders
-// above, which favor a display-friendly left-to-right layout instead.
-const NORMAL_STRENGTH_ORDER = ['A', '10', 'K', 'Q', 'J', '9', '8', '7'];
-const TRUMP_STRENGTH_ORDER = ['J', '9', 'A', '10', 'K', 'Q', '8', '7'];
+// Strongest-to-weakest, for the "card strength" hint.
+const NORMAL_STRENGTH_ORDER = [...NORMAL_RANK_ORDER].reverse();
+const TRUMP_STRENGTH_ORDER = [...TRUMP_RANK_ORDER].reverse();
 
 function isTrumpSuit(suit, m) {
   if (!m.contract) return false;
