@@ -66,6 +66,9 @@ const I18N = {
     announcePrefix: (label) => `Обяви: ${label}`,
     belotDeclareLabel: 'Белот (20)',
     suitNames: { clubs: 'спатия', diamonds: 'каро', hearts: 'купа', spades: 'пика' },
+    suitNamesCap: { clubs: 'Спатия', diamonds: 'Каро', hearts: 'Купа', spades: 'Пика' },
+    cardStrengthTitle: 'Сила на картите',
+    cardStrengthOther: 'Останали',
   },
   en: {
     title: 'Belot',
@@ -128,6 +131,9 @@ const I18N = {
     announcePrefix: (label) => `Announce: ${label}`,
     belotDeclareLabel: 'Belot (20)',
     suitNames: { clubs: 'clubs', diamonds: 'diamonds', hearts: 'hearts', spades: 'spades' },
+    suitNamesCap: { clubs: 'Clubs', diamonds: 'Diamonds', hearts: 'Hearts', spades: 'Spades' },
+    cardStrengthTitle: 'Card strength',
+    cardStrengthOther: 'Other suits',
   },
 };
 
@@ -217,6 +223,12 @@ const HAND_SUIT_ORDER = ['spades', 'hearts', 'diamonds', 'clubs'];
 // suit contract = only the called suit).
 const NORMAL_RANK_ORDER = ['7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const TRUMP_RANK_ORDER = ['7', '8', 'Q', 'K', '10', 'A', '9', 'J'];
+
+// True trick-taking strength, strongest to weakest (matches engine/card.go),
+// used for the "card strength" hint - NOT the same as the hand-sort orders
+// above, which favor a display-friendly left-to-right layout instead.
+const NORMAL_STRENGTH_ORDER = ['A', '10', 'K', 'Q', 'J', '9', '8', '7'];
+const TRUMP_STRENGTH_ORDER = ['J', '9', 'A', '10', 'K', 'Q', '8', '7'];
 
 function isTrumpSuit(suit, m) {
   if (!m.contract) return false;
@@ -871,6 +883,31 @@ function renderBidHistory(m) {
   $('bidHistory').innerHTML = html;
 }
 
+// Shows the strongest->weakest rank order for the current contract, below
+// the scoreboard. Всичко коз / без коз get one universal line since every
+// suit ranks the same way; a suit contract gets two lines - the trump suit
+// (all-trump order) and everyone else (no-trump order).
+function renderCardStrengthHint(m) {
+  const hint = $('cardStrengthHint');
+  if (!m.contract || m.phase === 'bidding') {
+    hint.classList.add('hidden');
+    return;
+  }
+  hint.classList.remove('hidden');
+  $('cardStrengthTitle').textContent = t('cardStrengthTitle');
+  const line2 = $('cardStrengthLine2');
+  if (m.contract.type === 'suit') {
+    const suitName = t('suitNamesCap')[m.contract.suit] || '';
+    $('cardStrengthLine1').textContent = `${suitName} - ${TRUMP_STRENGTH_ORDER.join(' ')}`;
+    line2.textContent = `${t('cardStrengthOther')} - ${NORMAL_STRENGTH_ORDER.join(' ')}`;
+    line2.classList.remove('hidden');
+  } else {
+    const order = m.contract.type === 'alltrump' ? TRUMP_STRENGTH_ORDER : NORMAL_STRENGTH_ORDER;
+    $('cardStrengthLine1').textContent = order.join(' ');
+    line2.classList.add('hidden');
+  }
+}
+
 function renderGameState(m) {
   showScreen('table');
   if (Array.isArray(m.teamNames) && m.teamNames.length === 2) teamNames = m.teamNames;
@@ -891,6 +928,7 @@ function renderGameState(m) {
   renderScoreboard();
 
   updateBidHistory(m);
+  renderCardStrengthHint(m);
 
   // Other seats: name (colored by team) + face-down full-size cards by count.
   for (let seat = 0; seat < 4; seat++) {
