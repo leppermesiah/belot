@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Белот</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="connStatus" class="conn-status hidden"></div>
+
+<div id="lobby" class="screen">
+  <h1 id="lobbyTitle">♣ ♦ ♥ ♠ Белот</h1>
+  <div class="lang-switch-stack">
+    <button id="langBgBtn" class="lang-btn-wide">Български</button>
+    <button id="langEnBtn" class="lang-btn-wide">English</button>
+  </div>
+  <div class="lobby-box">
+    <input id="nameInput" type="text" maxlength="20">
+    <button id="createBtn"></button>
+    <div id="orDivider" class="divider"></div>
+    <input id="codeInput" type="text" maxlength="6" style="text-transform:uppercase">
+    <button id="joinBtn"></button>
+    <p id="lobbyError" class="error"></p>
+  </div>
+</div>
+
+<div id="waiting" class="screen hidden">
+  <h1 id="waitingTitle"></h1>
+  <p id="roomCodeLabel">Код на стаята: <span id="roomCode" class="room-code"></span></p>
+  <ul id="playerList"></ul>
+
+  <div id="teamSelect" class="team-select hidden">
+    <p id="chooseTeamLabel"></p>
+    <div class="team-columns">
+      <div class="team-column">
+        <button id="chooseCherryBtn" class="team-btn team-btn-cherry"></button>
+        <ul id="cherryList" class="team-member-list"></ul>
+        <p id="cherryNameStatus" class="team-name-status"></p>
+      </div>
+      <div class="team-column">
+        <button id="chooseMalinaBtn" class="team-btn team-btn-malina"></button>
+        <ul id="malinaList" class="team-member-list"></ul>
+        <p id="malinaNameStatus" class="team-name-status"></p>
+      </div>
+    </div>
+  </div>
+
+  <button id="startBtn" class="hidden"></button>
+</div>
+
+<div id="teamNameOverlay" class="overlay hidden">
+  <div class="overlay-box">
+    <h2 id="teamNameTitle"></h2>
+    <p id="teamNameBody"></p>
+    <input id="teamNameInput" type="text" maxlength="24">
+    <button id="teamNameDoneBtn"></button>
+  </div>
+</div>
+
+<div id="table" class="screen hidden table-screen">
+
+  <div id="scoreboard" class="scoreboard-panel">
+    <div id="bidHistory" class="bid-history"></div>
+    <div class="scoreboard-cols">
+      <div class="scoreboard-col">
+        <div id="scoreboardHeaderUs" class="scoreboard-header team-us"></div>
+        <div class="scoreboard-rows" id="scoreRowsUs"></div>
+        <div class="scoreboard-total" id="scoreTotalUs">0</div>
+      </div>
+      <div class="scoreboard-col">
+        <div id="scoreboardHeaderThem" class="scoreboard-header team-them"></div>
+        <div class="scoreboard-rows" id="scoreRowsThem"></div>
+        <div class="scoreboard-total" id="scoreTotalThem">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-field">
+    <div class="hud">
+      <button id="langFlagBgBtn" class="flag-btn" title="Български">БГ</button>
+      <button id="langFlagEnBtn" class="flag-btn" title="English">EN</button>
+      <button id="leaveRoomBtn" class="leave-btn"></button>
+    </div>
+
+    <div class="seat seat-top" id="seat2"><div class="seat-name"></div><div class="declared-label"></div><div class="seat-cards"></div></div>
+    <div class="seat seat-left" id="seat1"><div class="seat-name"></div><div class="declared-label"></div><div class="seat-cards"></div></div>
+    <div class="seat seat-right" id="seat3"><div class="seat-name"></div><div class="declared-label"></div><div class="seat-cards"></div></div>
+    <div class="trick-area" id="trickArea"></div>
+
+    <div id="biddingPanel" class="panel hidden">
+      <p id="biddingTurnLabel"></p>
+      <div class="bid-buttons">
+        <button data-suit="clubs" id="bidClubsBtn"></button>
+        <button data-suit="diamonds" id="bidDiamondsBtn"></button>
+        <button data-suit="hearts" id="bidHeartsBtn"></button>
+        <button data-suit="spades" id="bidSpadesBtn"></button>
+        <button id="noTrumpBtn"></button>
+        <button id="allTrumpBtn"></button>
+        <button id="passBtn"></button>
+        <button id="contraBtn" class="hidden"></button>
+        <button id="recontoBtn" class="hidden"></button>
+      </div>
+    </div>
+
+    <div id="announcePrompt" class="announce-prompt hidden">
+      <span id="announceHaveLabel"></span>
+      <div id="announceButtons" class="announce-buttons"></div>
+    </div>
+
+    <div class="my-area">
+      <div class="seat-name" id="mySeatName"></div>
+      <div class="declared-label" id="myDeclaredLabel"></div>
+      <div class="hand" id="myHand"></div>
+    </div>
+  </div>
+
+  <div id="belotOverlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2 id="belotTitle"></h2>
+      <p id="belotBody"></p>
+      <button id="belotYesBtn"></button>
+      <button id="belotNoBtn"></button>
+    </div>
+  </div>
+
+  <div id="handRecapOverlay" class="overlay hidden">
+    <div class="recap-box">
+      <div id="recapRow" class="recap-row">
+        <span id="recapLabelUs" class="recap-label recap-label-us"></span>
+        <span id="recapLabelThem" class="recap-label recap-label-them"></span>
+        <div id="recapRowUs" class="recap-team-row recap-team-row-us"></div>
+        <div id="recapRowThem" class="recap-team-row recap-team-row-them"></div>
+      </div>
+      <button id="recapDoneBtn"></button>
+      <p id="recapWaiting" class="recap-waiting"></p>
+    </div>
+  </div>
+
+  <div id="resultOverlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2 id="resultTitle"></h2>
+      <p id="resultBody"></p>
+      <button id="resultCloseBtn"></button>
+      <button id="newGameBtn" class="hidden"></button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

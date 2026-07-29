@@ -1,0 +1,8 @@
+services:
+  belot:
+    build: .
+    image: belot:latest
+    container_name: belot
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
