@@ -14,5 +14,5 @@
   <Category>GameServers</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/leppermesiah/belot/main/templates/belot.xml</TemplateURL>
-  <Config Name="WebUI Port" Target="8080" Default="8082" Mode="tcp" Description="Портът, на който ще е достъпна играта" Type="Port" Display="always" Required="true" Mask="false">8082</Config>
+  <Config Name="WebUI Port" Target="8080" Default="8080" Mode="tcp" Description="WebUI Port" Type="Port" Display="always" Required="true" Mask="false">8080</Config>
 </Container>
