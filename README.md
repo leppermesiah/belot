@@ -1,6 +1,9 @@
 
 # Белот
 ![Икона](icon.png)
+
+<a href="https://www.buymeacoffee.com/leppermesiah"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=leppermesiah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+
 Self-hosted браузър белот за 4 приятели, играещи заедно през Teams (или каквото
 и да е гласово приложение). Сървърът е единственият източник на истината —
 клиентите само показват състоянието и изпращат ходове; всички правила се
